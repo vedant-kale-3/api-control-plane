@@ -1,0 +1,17 @@
+# Core
+fastapi>=0.115
+nicegui[native]>=2.14
+sqlmodel>=0.0.22
+pywebview>=5.3
+
+# Auth
+pyjwt>=2.9
+python-multipart>=0.0.9
+
+# Tracing
+opentelemetry-api>=1.27
+opentelemetry-sdk>=1.27
+
+# Dev / packaging
+pyinstaller>=6.10
+pytest>=8.3

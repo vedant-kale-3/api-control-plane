@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+build/dist/
+dist/
+*.spec.lock
+.pytest_cache/
