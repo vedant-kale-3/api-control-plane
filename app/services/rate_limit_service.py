@@ -17,6 +17,29 @@ from app.services.rbac_service import check_permission
 _counters: dict[int, list[tuple[float, int]]] = defaultdict(list)
 
 
+def get_consumption_snapshot(window_seconds: int = 60) -> dict[int, int]:
+    """Return a read-only snapshot of current-window hit counts.
+
+    Returns a plain ``{key_id: hit_count}`` dict for every key_id that has at
+    least one recorded hit inside *window_seconds*.  Prunes stale buckets as a
+    side effect (same as check_and_increment) so the dict stays lean.
+
+    This is the **only** public entry point the GUI should use to read
+    consumption data — it must never import ``_counters`` directly.
+    ``window_seconds`` defaults to 60 s; callers that know the policy window
+    should pass the actual value for an accurate count.
+    """
+    now = time.time()
+    snapshot: dict[int, int] = {}
+    for key_id, history in list(_counters.items()):
+        # Prune in place so the dict doesn't grow unboundedly.
+        history[:] = [(ts, c) for ts, c in history if now - ts < window_seconds]
+        total = sum(c for _, c in history)
+        if total > 0:
+            snapshot[key_id] = total
+    return snapshot
+
+
 def create_policy(actor_role: str, service_id: int, limit: int, window_seconds: int, key_id: int | None = None):
     check_permission(actor_role, "rate_limit_policy", "create")
     policy = RateLimitPolicy(service_id=service_id, key_id=key_id, limit=limit, window_seconds=window_seconds)

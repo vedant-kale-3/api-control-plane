@@ -5,10 +5,12 @@ as in the GUI. No "trusted internal caller" shortcut exists
 (ARCHITECTURE.md section 2.4, zero-trust).
 """
 from fastapi import APIRouter, HTTPException, Header
+from pydantic import BaseModel
 from sqlmodel import select
 from app.db import get_session
 from app.models.rate_limit import RateLimitPolicy
 from app.services import key_service
+from app.services import trace_service
 from app.services.rbac_service import PermissionDenied
 from app.services.rate_limit_service import check_and_increment
 
@@ -96,3 +98,42 @@ def get_keys(service_id: int | None = None, x_api_key: str | None = Header(defau
         {"id": k.id, "owner": k.owner, "service_id": k.service_id, "revoked_at": k.revoked_at}
         for k in keys
     ]
+
+
+# ---------------------------------------------------------------------------
+# Internal trace ingest endpoint (ARCHITECTURE.md §2.6)
+#
+# This endpoint is intentionally unauthenticated.  It is only meaningful
+# from callers in the same process or on 127.0.0.1 — the single-process
+# packaged-exe deployment model means no external actor can reach it without
+# first compromising the host machine (at which point HTTP auth provides no
+# meaningful additional barrier).  If a multi-process deployment is ever
+# adopted, add auth here first.
+# ---------------------------------------------------------------------------
+
+class SpanPayload(BaseModel):
+    """Loose schema for an inbound span.  All fields are optional so the
+    endpoint can accept both minimal hand-crafted spans (sample service)
+    and richer OpenTelemetry-formatted payloads in future."""
+    trace_id: str = ""
+    span_id: str = ""
+    parent_span_id: str | None = None
+    name: str = ""
+    service_id: int = 0
+    start_time: float | None = None
+    end_time: float | None = None
+    attributes: dict = {}
+
+
+@router.post("/internal/trace", status_code=202)
+def ingest_trace_span(payload: SpanPayload):
+    """Receive a span from an instrumented service and push it into the
+    in-memory ring buffer + subscriber queues (trace_service.ingest_span).
+
+    Returns 202 Accepted — the caller does not need to wait for any DB
+    write; persistence to the TraceSpan table is a future concern
+    (ARCHITECTURE.md §2.6: 'Long-term trace storage … writes to a
+    TraceSpan table with a retention policy').
+    """
+    trace_service.ingest_span(payload.model_dump())
+    return {"accepted": True}

@@ -329,3 +329,108 @@ class TestPermissionMatrix:
     def test_role_does_not_have_permission(self, seeded_db, role, resource, action):
         with pytest.raises(PermissionDenied):
             check_permission(role, resource, action)
+
+
+# ===========================================================================
+# Zero-permissions role: fail-closed guarantee
+# ===========================================================================
+
+class TestRoleWithNoPermissionsFailsClosed:
+    """ARCHITECTURE.md §2.4 — a role row that exists in the DB but has
+    zero associated Permission rows must never pass a check_permission()
+    call.  This is the critical 'fail-closed' invariant: presence of a
+    Role row alone confers *no* access at all.
+
+    This directly covers the scenario described in the rbac_admin page
+    where a newly-created role starts empty and the UI warns the user it
+    "fails closed on every access check until permissions are explicitly
+    granted."
+    """
+
+    @pytest.fixture()
+    def empty_role_db(self, seeded_db, monkeypatch):
+        """Extends seeded_db by adding a brand-new role with no permissions.
+
+        The audit log side-effect is stubbed (same pattern as seeded_db)
+        so the fixture is self-contained.
+        """
+        from unittest.mock import MagicMock
+        import app.services.audit_service as aud
+        monkeypatch.setattr(aud, "log_action", MagicMock())
+
+        add_role("fixture-actor", "admin", "no-perms-role")
+        return seeded_db
+
+    def test_empty_role_is_denied_on_any_resource(self, empty_role_db):
+        """A role with zero permission rows must raise PermissionDenied
+        regardless of the resource/action requested (case b, §2.4)."""
+        with pytest.raises(PermissionDenied, match="cannot"):
+            check_permission("no-perms-role", "api_key", "list")
+
+    def test_empty_role_denied_on_rbac_read(self, empty_role_db):
+        """Specifically confirm the role cannot read RBAC data either —
+        this matters because list_roles/list_permissions gate on rbac:read."""
+        with pytest.raises(PermissionDenied):
+            check_permission("no-perms-role", "rbac", "read")
+
+    def test_empty_role_denied_on_rbac_manage(self, empty_role_db):
+        """Confirm the role cannot manage RBAC (escalation-grant gate)."""
+        with pytest.raises(PermissionDenied):
+            check_permission("no-perms-role", "rbac", "manage")
+
+    def test_empty_role_denied_on_audit_log(self, empty_role_db):
+        """Confirm the role cannot read the audit log."""
+        with pytest.raises(PermissionDenied):
+            check_permission("no-perms-role", "audit_log", "read")
+
+    def test_empty_role_denied_on_rate_limit_policy(self, empty_role_db):
+        """Confirm the role cannot create rate-limit policies."""
+        with pytest.raises(PermissionDenied):
+            check_permission("no-perms-role", "rate_limit_policy", "create")
+
+    @pytest.mark.parametrize("resource,action", [
+        ("api_key",            "create"),
+        ("api_key",            "revoke"),
+        ("api_key",            "list"),
+        ("rate_limit_policy",  "create"),
+        ("rbac",               "manage"),
+        ("rbac",               "read"),
+        ("audit_log",          "read"),
+    ])
+    def test_empty_role_fails_closed_across_all_known_permissions(
+        self, empty_role_db, resource, action
+    ):
+        """Parametrised sweep across every (resource, action) pair that
+        exists in the seeded permission set — the empty role must be
+        denied on all of them without exception."""
+        with pytest.raises(PermissionDenied):
+            check_permission("no-perms-role", resource, action)
+
+    def test_granting_one_permission_does_not_unlock_others(
+        self, empty_role_db, monkeypatch
+    ):
+        """After explicitly granting a single permission the role passes
+        exactly that check — and still fails on every other resource/action.
+        This confirms permissions are additive and never implicit."""
+        from unittest.mock import MagicMock
+        import app.services.audit_service as aud
+        monkeypatch.setattr(aud, "log_action", MagicMock())
+
+        # Grant exactly one permission.
+        add_permission("actor", "admin", "no-perms-role", "api_key", "list")
+
+        # That specific check must now pass.
+        assert check_permission("no-perms-role", "api_key", "list") is True
+
+        # All other checks must still fail.
+        still_denied = [
+            ("api_key",           "create"),
+            ("api_key",           "revoke"),
+            ("rate_limit_policy", "create"),
+            ("rbac",              "manage"),
+            ("rbac",              "read"),
+            ("audit_log",         "read"),
+        ]
+        for resource, action in still_denied:
+            with pytest.raises(PermissionDenied, match="cannot"):
+                check_permission("no-perms-role", resource, action)

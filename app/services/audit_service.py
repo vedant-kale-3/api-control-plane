@@ -21,12 +21,34 @@ def log_action(actor: str, action: str, target_type: str, target_id, details: di
         session.commit()
 
 
-def query_logs(actor: str | None = None, action: str | None = None, limit: int = 200):
+def query_logs(
+    actor: str | None = None,
+    action: str | None = None,
+    date_from=None,
+    date_to=None,
+    limit: int = 200,
+):
+    """Return AuditLogEntry rows matching the supplied filters.
+
+    All parameters are optional; existing call sites that pass only
+    ``actor`` / ``action`` / ``limit`` continue to work unchanged.
+
+    Args:
+        actor:      Exact match on the ``actor`` column (case-sensitive).
+        action:     Exact match on the ``action`` column.
+        date_from:  ``datetime`` (inclusive lower bound on ``timestamp``).
+        date_to:    ``datetime`` (exclusive upper bound on ``timestamp``).
+        limit:      Maximum number of rows returned (default 200).
+    """
     with get_session() as session:
         stmt = select(AuditLogEntry)
         if actor:
             stmt = stmt.where(AuditLogEntry.actor == actor)
         if action:
             stmt = stmt.where(AuditLogEntry.action == action)
+        if date_from is not None:
+            stmt = stmt.where(AuditLogEntry.timestamp >= date_from)
+        if date_to is not None:
+            stmt = stmt.where(AuditLogEntry.timestamp < date_to)
         stmt = stmt.order_by(AuditLogEntry.timestamp.desc()).limit(limit)
         return session.exec(stmt).all()
