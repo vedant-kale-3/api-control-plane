@@ -13,7 +13,7 @@ files are the source of truth for conventions in this repo.
    ```
 3. Install dependencies:
    ```
-   pip install -r requirements.txt
+   pip install -r requirements.txt -r requirements-dev.txt
    ```
 4. Run the app:
    ```
@@ -36,10 +36,22 @@ pytest
 
 ## Package as a Windows exe (Phase 6)
 
+Packaging must use a **clean venv** that contains only the runtime deps so
+`pyinstaller` itself is never frozen into the exe:
+
 ```
+python -m venv .venv-package
+.venv-package\Scripts\activate
+pip install -r requirements.txt
+pip install pyinstaller>=6.10
 pyinstaller build/app.spec
 ```
 
-Output lands in `build/dist/APIControlPlane/`. Test on a clean Windows VM
+> **Why a separate venv?** `pyinstaller` and `pytest` now live in
+> `requirements-dev.txt`, not `requirements.txt`. A packaging venv that only
+> installs `requirements.txt` guarantees those tools cannot be accidentally
+> pulled into the frozen bundle.
+
+Output lands in `dist/APIControlPlane/`. Test on a clean Windows VM
 before distributing — see `docs/ARCHITECTURE.md` Packaging Notes for the
 WebView2 dependency decision you need to make first.

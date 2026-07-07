@@ -30,6 +30,13 @@ def register_pages():
     live_trace.register(build_nav)
 
 
-def run():
+def run(port: int = 8080) -> None:
     register_pages()
-    ui.run(native=True, window_size=(1280, 800), title="API Control Plane", reload=False)
+    ui.run(
+        native=True,
+        window_size=(1280, 800),
+        title="API Control Plane",
+        reload=False,
+        host="127.0.0.1",  # never expose on 0.0.0.0; loopback only
+        port=port,         # free port selected by main._find_free_port()
+    )

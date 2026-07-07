@@ -1,14 +1,16 @@
-import os
 from pathlib import Path
 from sqlmodel import SQLModel, create_engine, Session
+from app.paths import user_data_dir
 
 
 def get_db_path() -> Path:
-    """Writable per-user app-data directory — never a path relative to the
-    frozen exe (ARCHITECTURE.md, Packaging Notes)."""
-    base = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "APIControlPlane"
-    base.mkdir(parents=True, exist_ok=True)
-    return base / "data.db"
+    """Return the path to the SQLite database file.
+
+    Delegates to ``app.paths.user_data_dir()`` so the writable-directory
+    logic is centralised in one place (app/paths.py) rather than duplicated
+    here.  The directory is guaranteed to exist when this function returns.
+    """
+    return user_data_dir() / "data.db"
 
 
 DB_PATH = get_db_path()

@@ -12,7 +12,22 @@ a = Analysis(
     pathex=['..'],
     binaries=[],
     datas=[],
-    hiddenimports=['nicegui', 'pywebview'],
+    hiddenimports=[
+        'nicegui',
+        'pywebview',
+        # Deferred import inside app/db.py:init_db() — PyInstaller's graph walk
+        # never enters function bodies, so these modules are invisible to it.
+        'app.models',
+        'app.models.service',
+        'app.models.api_key',
+        'app.models.rate_limit',
+        'app.models.audit_log',
+        'app.models.rbac',
+        'app.models.trace',
+        # Deferred imports inside app/services/rbac_service.py (add_role /
+        # add_permission) that break a circular dependency at module load time.
+        'app.services.audit_service',
+    ],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
