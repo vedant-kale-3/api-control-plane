@@ -19,6 +19,7 @@
 # Spec format docs: https://pyinstaller.org/en/stable/spec-files.html
 # =============================================================================
 
+import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 # ---------------------------------------------------------------------------
@@ -244,13 +245,18 @@ exe = EXE(
     codesign_identity=None,        # set to your cert CN for code-signed releases
     entitlements_file=None,
     # ── Windows version metadata ──────────────────────────────────────────
-    version='build/version_info.txt',
+    # SPECPATH is always the directory containing this spec file (build\).
+    # Using os.path.join(SPECPATH, ...) avoids the doubled-prefix bug that
+    # occurs when pyinstaller is invoked from the repo root with a relative
+    # spec path like "build\build.spec" -- bare 'build/version_info.txt'
+    # would resolve to build\build\version_info.txt (wrong).
+    version=os.path.join(SPECPATH, 'version_info.txt'),
     # ── App icon ──────────────────────────────────────────────────────────
     # Provide a multi-size .ico file at build/icon.ico before building.
     # Required sizes: 16x16, 32x32, 48x48, 64x64, 128x128, 256x256 (RGBA).
     # Generate from a PNG with: magick input.png -define icon:auto-resize
     #     "256,128,64,48,32,16" build/icon.ico
-    # icon='build/icon.ico',      # <- uncomment once icon.ico is present
+    # icon=os.path.join(SPECPATH, 'icon.ico'),  # <- uncomment once present
     uac_admin=False,
 )
 

@@ -1,0 +1,68 @@
+('D:\\Vedant\\Projects\\Web API Saftey '
+ 'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\APIControlPlane.pkg',
+ {'BINARY': True,
+  'DATA': True,
+  'EXECUTABLE': True,
+  'EXTENSION': True,
+  'PYMODULE': True,
+  'PYSOURCE': True,
+  'PYZ': False,
+  'SPLASH': True,
+  'SYMLINK': False},
+ [('pyi-contents-directory _internal', '', 'OPTION'),
+  ('PYZ-00.pyz',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\PYZ-00.pyz',
+   'PYZ'),
+  ('struct',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\localpycs\\struct.pyc',
+   'PYMODULE'),
+  ('pyimod01_archive',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\localpycs\\pyimod01_archive.pyc',
+   'PYMODULE'),
+  ('pyimod02_importers',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\localpycs\\pyimod02_importers.pyc',
+   'PYMODULE'),
+  ('pyimod03_ctypes',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\localpycs\\pyimod03_ctypes.pyc',
+   'PYMODULE'),
+  ('pyimod04_pywin32',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\build\\build\\localpycs\\pyimod04_pywin32.pyc',
+   'PYMODULE'),
+  ('pyiboot01_bootstrap',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\.venv\\Lib\\site-packages\\PyInstaller\\loader\\pyiboot01_bootstrap.py',
+   'PYSOURCE'),
+  ('pyi_rth_inspect',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_inspect.py',
+   'PYSOURCE'),
+  ('pyi_rth_pkgutil',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_pkgutil.py',
+   'PYSOURCE'),
+  ('pyi_rth_multiprocessing',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_multiprocessing.py',
+   'PYSOURCE'),
+  ('pyi_rth_setuptools',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_setuptools.py',
+   'PYSOURCE'),
+  ('main',
+   'D:\\Vedant\\Projects\\Web API Saftey '
+   'Dashboard\\api-control-plane-scaffold\\api-control-plane\\app\\main.py',
+   'PYSOURCE')],
+ 'python314.dll',
+ True,
+ False,
+ False,
+ [],
+ None,
+ None,
+ None)
