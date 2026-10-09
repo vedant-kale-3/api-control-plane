@@ -7,7 +7,7 @@ from app.gui.pages import keys, rate_limits, audit_log, rbac_admin, live_trace
 
 
 def build_nav():
-    with ui.left_drawer().classes("bg-grey-2"):
+    with ui.left_drawer():
         ui.link("Keys", "/keys")
         ui.link("Rate Limits", "/rate-limits")
         ui.link("Audit Log", "/audit-log")
@@ -37,6 +37,7 @@ def run(port: int = 8080) -> None:
         window_size=(1280, 800),
         title="API Control Plane",
         reload=False,
+        dark=True,
         host="127.0.0.1",  # never expose on 0.0.0.0; loopback only
         port=port,         # free port selected by main._find_free_port()
     )
